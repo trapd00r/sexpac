@@ -1,0 +1,125 @@
+#!/usr/bin/perl
+our $APP     = 'sexpac';
+our $VERSION = 0.1;
+use strict;
+use Data::Dumper;
+use Pod::Usage;
+use Getopt::Long;
+
+print "$APP $VERSION\n" and usage() unless(@ARGV);
+GetOptions(
+  help  => sub { print "$APP $VERSION\n"; usage(); },
+  man   => sub { pod2usage(verbose => 3); },
+);
+
+my @query = @ARGV;
+my @query_to_pacman = ();
+for(@query) {
+  push(@query_to_pacman, "'$_'");
+}
+
+our $color_support = 256; #FIXME => to config
+
+my %c = (
+  dimblue   => "\e[38;5;032m",
+  orange    => "\e[38;5;208m",
+  green     => "\e[38;5;082m",
+  darkgreen => "\e[38;5;148m",
+  red       => "\e[38;5;196m",
+  pink      => "\e[38;5;197m",
+  darkgrey  => "\e[38;5;233m",
+  grey      => "\e[38;5;240m",
+  yellow    => "\e[38;5;226m",
+
+  bold      => "\e[1m",
+  italic    => "\e[3m",
+  def       => "\e[0m",
+);
+
+if($color_support < 255 && $color_support > 7) {
+  my $i = 0;
+  for my $cname(keys(%c)) {
+    $c{$cname} = "\e[3$i" . 'm';
+    ++$i;
+  }
+}
+if(!$color_support || $color_support < 8) {
+  $c{$_} = '' for(keys(%c));
+}
+
+open(my $pacsearch, "pacman -Ss @query_to_pacman|") or die("pacman search failed: $!");
+my @result = <$pacsearch>;
+close($pacsearch);
+
+for my $record(@result) {
+  chomp($record);
+  my ($repo,$pkg,$version) = $record =~ m;^(.+)/(.+) (.+);;
+  if($pkg =~ /($query[0])(.*)/gip) {
+    $record = "$repo/${^PREMATCH}$c{bold}$c{pink}$1$c{def}" . $2;
+  }
+  if(length($record) > 78) {
+    # we have to do this here since the escape sequences will add up to the
+    # str len. No package name could possibly be this big.
+    $record = substr($record, 0, 77) . ' ..';
+  }
+  $record = sprintf("%.80s", $record) if(length($record) > 80);
+  $record =~
+  s/\s
+    \[
+      (
+      installed
+      )
+    \]$
+   /$c{bold} \[$c{def}$c{yellow}$1$c{def}$c{bold}]$c{def}/gx;
+
+
+  $record =~ s;^core/(.*);$c{dimblue}     core$c{grey} ▪▶ $c{def}$1;;
+  $record =~ s;^extra/(.*);$c{orange}    extra$c{def}$c{grey} ▪▶ $c{def}$1;;
+  $record =~ s;^community/(.*);$c{darkgreen}community$c{grey} ▪▶ $c{def}$1;;
+  $record =~ s;^testing/(.*);$c{red}testing$c{grey} ▪▶ $c{def}$1;;
+
+  $record =~ s/^\s{4}(.+)$/\t$c{italic}$1$c{def}/;
+  print $record, "\n";
+}
+
+sub usage {
+  pod2usage(verbose => 1);
+  exit(0);
+}
+
+=pod
+
+=head1 NAME
+
+  sexpac - prettify pacman output
+
+=head1 SYNOPSIS
+
+  sexpac <pattern>
+
+=head1 DESCRIPTION
+
+The idea for prettypac was borned when the author wasnt satisfied with
+pacman-contrib/pacsearch.
+
+sexpac supports 256 colors, aligned and reformatted output that'll make sure
+it's actually readable, grep-like colorizing of matched pattern in the output
+(makes it easier to see what actually matched), with more to come.
+
+=head1 AUTHOR
+
+Written by Magnus Woldrich.
+
+=head1 REPORTING BUGS
+
+Report bugs to trapd00r\@trapd00r.se
+
+sexpac homepage: http://github.com/trapd00r/sexpac
+
+=head1 COPYRIGHT
+
+Copyright 2010 Magnus Woldrich.
+
+License GPLv2.
+
+=cut
