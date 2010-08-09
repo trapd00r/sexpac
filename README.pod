@@ -1,0 +1,36 @@
+=pod
+
+=head1 NAME
+
+  sexpac - prettify pacman output
+
+=head1 SYNOPSIS
+
+  sexpac <pattern>
+
+=head1 DESCRIPTION
+
+The idea for prettypac was borned when the author wasnt satisfied with
+pacman-contrib/pacsearch.
+
+sexpac supports 256 colors, aligned and reformatted output that'll make sure
+it's actually readable, grep-like colorizing of matched pattern in the output
+(makes it easier to see what actually matched), with more to come.
+
+=head1 AUTHOR
+
+Written by Magnus Woldrich.
+
+=head1 REPORTING BUGS
+
+Report bugs to trapd00r\@trapd00r.se
+
+sexpac homepage: http://github.com/trapd00r/sexpac
+
+=head1 COPYRIGHT
+
+Copyright 2010 Magnus Woldrich.
+
+License GPLv2.
+
+=cut
