@@ -99,7 +99,7 @@ sub usage {
 
 =head1 DESCRIPTION
 
-The idea for prettypac was born when the author wasnt satisfied with
+The idea for sexpac was born when the author wasnt satisfied with
 pacman-contrib/pacsearch.
 
 sexpac supports 256 colors, aligned and reformatted output that'll make sure
